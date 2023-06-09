@@ -51,7 +51,8 @@ target = torch.tensor(target)
 target.shape # target is the avg firing rates for each image
 
 
-# In[]: Normalizing the input:
+# In[]: Using data from a018
+'''
 import scipy.io
 import numpy as np
 from scipy.stats import pearsonr
@@ -80,7 +81,7 @@ struct_data = data['Dataset_Bashivan_5stim_newArrangment']
 dataset = struct_to_dict(struct_data)
 
 # Access the converted dictionary
-print(dataset)
+#print(dataset)
 
 neural_data = np.array(dataset['neuralData'])
 natural_img = torch.from_numpy(np.array(dataset['stimuli']))
@@ -94,6 +95,35 @@ stim = torch.permute(stim, (1, 0, 2, 3))
 stim = transform(stim).to(device, dtype=torch.float32) # stim is the input images  
 
 
+
+# Empty list to store the average layer responses
+# run the model first
+cc=0
+# Loop through each layer in the model
+for name, layer in model.named_modules():
+    if cc == 70:
+        # Register a hook to get the layer output
+        current_layer_response = []
+        def hook_fn(module, input, output):
+            current_layer_response.append(output.cpu().detach().numpy())
+        layer.register_forward_hook(hook_fn)
+    
+        # Make a forward pass through the model with one batch to get the layer output
+        with torch.no_grad():
+            _ = model(stim)
+            
+        # Get the average layer response
+        X = torch.from_numpy(current_layer_response[0])
+        #layer_responses.append(current_layer_response[0])
+        
+        # Store the layer name
+        #layer_names.append(name)
+    
+        # Remove the hook to free up memory
+        layer._forward_hooks.clear()
+        print("cc:", cc)
+    cc=cc+1
+'''
 # In[]: Normalizing the input:
 import torchvision.transforms as transforms
 
@@ -108,6 +138,7 @@ normalize = transforms.Normalize(mean=mean, std=std)
 
 # Apply normalization to your input images
 stim = normalize(stim)
+
 
 
 # In[]:
@@ -181,7 +212,7 @@ h5_layers.close()
 from scipy.stats import pearsonr
 
 print(X.shape)
-print(layerName)
+#print(layerName)
 Y = target
 num_neurons = Y.shape[1]
 mapper2=Mapper2(graph=None, max_epochs=120
