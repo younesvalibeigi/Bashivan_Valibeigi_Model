@@ -9,3 +9,10 @@ torch==1.13.1
 torchvision==0.14.1
 scikit-learn==1.2.2
 plotly==5.9.0
+scipy.io
+scipy.stats
+pickle
+pdb
+h5py
+logging
+neuxusformat.neuxus
